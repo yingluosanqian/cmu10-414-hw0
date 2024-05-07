@@ -48,8 +48,18 @@ def parse_mnist(image_filename, label_filename):
                 for MNIST will contain the values 0-9.
     """
     ### BEGIN YOUR CODE
-    pass
+    with gzip.open(image_filename, 'rb') as f:
+        _, num_img, row, col = struct.unpack('>IIII', f.read(16))
+        X = np.frombuffer(f.read(), np.uint8).byteswap().reshape(num_img, row * col).astype(np.float32) / 255
+    with gzip.open(label_filename, 'rb') as f:
+        _, _ = struct.unpack('>II', f.read(8))
+        y = np.frombuffer(f.read(), np.uint8).byteswap()
+    return X, y
     ### END YOUR CODE
+
+
+def softmax(X):
+    return np.exp(X) / np.sum(np.exp(X), axis=1, keepdims=True)
 
 
 def softmax_loss(Z, y):
@@ -68,11 +78,11 @@ def softmax_loss(Z, y):
         Average softmax loss over the sample.
     """
     ### BEGIN YOUR CODE
-    pass
+    return np.mean(-np.log(softmax(Z)[np.arange(y.shape[0]), y]))
     ### END YOUR CODE
 
 
-def softmax_regression_epoch(X, y, theta, lr = 0.1, batch=100):
+def softmax_regression_epoch(X, y, theta, lr=0.1, batch=100):
     """ Run a single epoch of SGD for softmax regression on the data, using
     the step size lr and specified batch size.  This function should modify the
     theta matrix in place, and you should iterate through batches in X _without_
@@ -91,11 +101,16 @@ def softmax_regression_epoch(X, y, theta, lr = 0.1, batch=100):
         None
     """
     ### BEGIN YOUR CODE
-    pass
+    for i in range(0, y.shape[0], batch):
+        X_batch = X[i:i+batch]
+        y_batch = y[i:i+batch]
+        Z = softmax(X_batch @ theta)
+        grad = X_batch.T @ (Z - np.eye(Z.shape[1])[y_batch]) / y_batch.shape[0]
+        theta -= lr * grad
     ### END YOUR CODE
 
 
-def nn_epoch(X, y, W1, W2, lr = 0.1, batch=100):
+def nn_epoch(X, y, W1, W2, lr=0.1, batch=100):
     """ Run a single epoch of SGD for a two-layer neural network defined by the
     weights W1 and W2 (with no bias terms):
         logits = ReLU(X * W1) * W2
@@ -118,9 +133,18 @@ def nn_epoch(X, y, W1, W2, lr = 0.1, batch=100):
         None
     """
     ### BEGIN YOUR CODE
-    pass
+    def ReLU(M):
+        return np.maximum(0, M)
+    for i in range(0, y.shape[0], batch):
+        X_batch = X[i:i+batch]
+        y_batch = y[i:i+batch]
+        Z1 = ReLU(X_batch @ W1)
+        Z2 = softmax(Z1 @ W2)
+        grad_1 = X_batch.T @ (np.where(Z1 > 0, 1, Z1) * ((Z2 - np.eye(Z2.shape[1])[y_batch]) @ W2.T)) / y_batch.shape[0]
+        grad_2 = Z1.T @ (Z2 - np.eye(Z2.shape[1])[y_batch]) / y_batch.shape[0]
+        W1 -= lr * grad_1
+        W2 -= lr * grad_2
     ### END YOUR CODE
-
 
 
 ### CODE BELOW IS FOR ILLUSTRATION, YOU DO NOT NEED TO EDIT
@@ -164,13 +188,14 @@ def train_nn(X_tr, y_tr, X_te, y_te, hidden_dim = 500,
 
 
 if __name__ == "__main__":
-    X_tr, y_tr = parse_mnist("data/train-images-idx3-ubyte.gz",
-                             "data/train-labels-idx1-ubyte.gz")
-    X_te, y_te = parse_mnist("data/t10k-images-idx3-ubyte.gz",
-                             "data/t10k-labels-idx1-ubyte.gz")
+    X_tr, y_tr = parse_mnist("../data/train-images-idx3-ubyte.gz",
+                             "../data/train-labels-idx1-ubyte.gz")
+    X_te, y_te = parse_mnist("../data/t10k-images-idx3-ubyte.gz",
+                             "../data/t10k-labels-idx1-ubyte.gz")
 
     print("Training softmax regression")
-    train_softmax(X_tr, y_tr, X_te, y_te, epochs=10, lr = 0.1)
+    train_softmax(X_tr, y_tr, X_te, y_te, epochs=10, lr=0.1)
 
     print("\nTraining two layer neural network w/ 100 hidden units")
-    train_nn(X_tr, y_tr, X_te, y_te, hidden_dim=100, epochs=20, lr = 0.2)
+    train_nn(X_tr, y_tr, X_te, y_te, hidden_dim=100, epochs=20, lr=0.2)
+    pass
