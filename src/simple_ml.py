@@ -20,7 +20,7 @@ def add(x, y):
         Sum of x + y
     """
     ### BEGIN YOUR CODE
-    pass
+    return x + y
     ### END YOUR CODE
 
 
@@ -161,7 +161,6 @@ def train_nn(X_tr, y_tr, X_te, y_te, hidden_dim = 500,
         test_loss, test_err = loss_err(np.maximum(X_te@W1,0)@W2, y_te)
         print("|  {:>4} |    {:.5f} |   {:.5f} |   {:.5f} |  {:.5f} |"\
               .format(epoch, train_loss, train_err, test_loss, test_err))
-
 
 
 if __name__ == "__main__":
