@@ -140,7 +140,7 @@ def nn_epoch(X, y, W1, W2, lr=0.1, batch=100):
         y_batch = y[i:i+batch]
         Z1 = ReLU(X_batch @ W1)
         Z2 = softmax(Z1 @ W2)
-        grad_1 = X_batch.T @ (np.where(Z1 > 0, 1, Z1) * ((Z2 - np.eye(Z2.shape[1])[y_batch]) @ W2.T)) / y_batch.shape[0]
+        grad_1 = X_batch.T @ (np.where(Z1 > 0, 1, 0) * ((Z2 - np.eye(Z2.shape[1])[y_batch]) @ W2.T)) / y_batch.shape[0]
         grad_2 = Z1.T @ (Z2 - np.eye(Z2.shape[1])[y_batch]) / y_batch.shape[0]
         W1 -= lr * grad_1
         W2 -= lr * grad_2

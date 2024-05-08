@@ -5,30 +5,30 @@
 
 namespace py = pybind11;
 
-void matmul(const float* A, const float* B, float* C, int n, int m, int p) {
+void matmul(const float* A, const float* B, float* C, size_t n, size_t m, size_t p) {
     /**
      * Args:
      * A: n x m, B: m x p
      * C: n x p = A x B
      */
-     for (int i = 0; i < n; i++) {
-        for (int k = 0; k < p; k++) {
-            C[i * p + k] = 0
-            for (int j = 0; j < m; j++) {
+     for (size_t i = 0; i < n; i++) {
+        for (size_t k = 0; k < p; k++) {
+            C[i * p + k] = 0;
+            for (size_t j = 0; j < m; j++) {
                 C[i * p + k] += A[i * m + j] * B[j * p + k];
             }
         }
      }
 }
 
-void softmax(float* X, int n, int m) {
-    for (int i = 0; i < n; i++) {
+void softmax(float* X, size_t n, size_t m) {
+    for (size_t i = 0; i < n; i++) {
         float sum = 0;
-        for (int j = 0; j < m; j++) {
+        for (size_t j = 0; j < m; j++) {
             X[i * m + j] = exp(X[i * m + j]);
             sum += X[i * m + j];
         }
-        for (int j = 0; j < m; j++) {
+        for (size_t j = 0; j < m; j++) {
             X[i * m + j] = X[i * m + j] / sum;
         }
     }
@@ -62,20 +62,20 @@ void softmax_regression_epoch_cpp(const float *X, const unsigned char *y,
 
     /// BEGIN YOUR CODE
     auto Z = new float[m * k];
-    for (int i = 0; i < m; i += batch) {
-        auto X_batch = X + i * n
-        auto y_batch = y + i
-        m_batch = min(m - i, batch);
-        matmul(X_batch, y_batch, Z, m_batch, n, k);
+    for (size_t i = 0; i < m; i += batch) {
+        auto X_batch = X + i * n;
+        auto y_batch = y + i;
+        auto m_batch = std::min(m - i, batch);
+        matmul(X_batch, theta, Z, m_batch, n, k);
         softmax(Z, m_batch, k);
         // grad = X_batch.T @ (Z - np.eye(Z.shape[1])[y_batch]) / y_batch.shape[0]
-        for (int r_Z = 0; r_Z < m_batch; r_Z++) {
+        for (size_t r_Z = 0; r_Z < m_batch; r_Z++) {
             Z[r_Z * k + y_batch[r_Z]] -= 1;
         }
-        for (int row = 0; row < n; row++) {
-            for (int col = 0; col < k; col++) {
+        for (size_t row = 0; row < n; row++) {
+            for (size_t col = 0; col < k; col++) {
                 float grad = 0;
-                for (int mid = 0; mid < m_batch; mid++) {
+                for (size_t mid = 0; mid < m_batch; mid++) {
                     grad += X_batch[mid * n + row] * Z[mid * k + col];
                 }
                 theta[row * k + col] -= lr * grad / m_batch;
