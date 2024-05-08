@@ -202,5 +202,6 @@ if __name__ == "__main__":
     print("\nTraining two layer neural network w/ 100 hidden units")
     train_nn(X_tr, y_tr, X_te, y_te, hidden_dim=100, epochs=20, lr=0.2)
 
-    # ohhhh
+    # test 1
+    # test 2
     pass

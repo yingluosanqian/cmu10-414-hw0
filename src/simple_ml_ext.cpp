@@ -62,6 +62,7 @@ void softmax_regression_epoch_cpp(const float *X, const unsigned char *y,
 
     /// BEGIN YOUR CODE
     auto Z = new float[m * k];
+
     for (int i = 0; i < m; i += batch) {
         auto X_batch = X + i * n
         auto y_batch = y + i
@@ -82,6 +83,7 @@ void softmax_regression_epoch_cpp(const float *X, const unsigned char *y,
             }
         }
     }
+
     delete Z;
     /// END YOUR CODE
 }
